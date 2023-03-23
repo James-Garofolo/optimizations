@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from HW2_P8 import steepest_descent
 
 ros_a = 100
 
@@ -123,7 +123,8 @@ if __name__ == "__main__":
     x0 = np.array([-1.2,1])
     
     print("initial: ", x0)
-    sd = steepest_descent_backtrack(ros_f, ros_grad, x0,rho=0.05, iter_lim=1e7)
+    sd = steepest_descent_backtrack(ros_f, ros_grad, x0,rho=0.1, iter_lim=1e7)
+    sd_no_backtrack = steepest_descent(ros_f, ros_grad, 0.000001, x0, 1e7)
     n = newton(ros_f, ros_grad, ros_hessian, x0, iter_lim=1e6)
     xs, fs, a = n.solve()
     delta_x = np.linalg.norm(xs[1:]-xs[:-1], axis=1)
@@ -131,8 +132,14 @@ if __name__ == "__main__":
     print(f"newton's: \n solution: {xs[-1]}, \n num iterations {a}")
     xs, fs, a = sd.solve()
     delta_x = np.linalg.norm(xs[1:]-xs[:-1], axis=1)
-    plt.plot(delta_x, label='steepest descent')
+    #plt.plot(delta_x, label='steepest descent')
     print(f"steepest descent: \n solution: {xs[-1]}, \n num iterations {a}")
+    
+    xs, fs, a = sd_no_backtrack.solve()
+    #delta_x = np.linalg.norm(xs[1:]-xs[:-1], axis=1)
+    #plt.plot(delta_x, label='steepest descent')
+    print(f"steepest descent: \n solution: {xs[-1]}, \n num iterations {a}")
+
     plt.legend()
     plt.xlabel('iteration')
     plt.ylabel('l2norm of change in x')
