@@ -46,9 +46,4 @@ def pnn_f(x):
 
 if __name__ == "__main__":
 
-    def test_f(x):
-        return np.sum(x**2)
-    
-    test_grad = generate_finite_diff_grad(test_f, second_order=False)
-
-    print(test_grad(np.array([3.0, 1.0, 2.0])))
+    pass
