@@ -49,7 +49,7 @@ def generate_finite_diff_grad(f, delta_x=1e-7, second_order=False):
         return ddg_1st
 
 class newton:
-    def __init__(self, function, gradient, hessian, initial, norm_grad_tol=1e-5, iter_lim=None) -> None:
+    def __init__(self, function, gradient, hessian, initial, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
         """
         class that implements Newton's algorithm
 
@@ -60,6 +60,7 @@ class newton:
             initial: the initial guess for the algorithm, must be a numpy vector of the size that f(x) expects
             norm_grad_tol: value that the 2-norm of the gradient must be less than in order to consider a problem solved
             iter_lim: number of iterations that the algorithm will attempt before considering a problem unsolvable
+            print_every: the number of iterations the algorithm prints an update after
         """
         self.f = function
         self.g = gradient
@@ -67,6 +68,7 @@ class newton:
         self.x = initial
         self.ngt = norm_grad_tol
         self.iter_lim = iter_lim
+        self.print_every = print_every
 
     def step(self, gradient=None, hessian=None):
         if gradient is None:
@@ -91,6 +93,8 @@ class newton:
         a = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(grad)
+            if a%self.print_every == 0:
+                print(f"iteration:{a} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
             a+=1
@@ -103,7 +107,7 @@ class newton:
     
 
 class steepest_descent_backtrack:
-    def __init__(self, function, gradient, initial, c=1e-4, rho=0.9, norm_grad_tol=1e-5, iter_lim=None) -> None:
+    def __init__(self, function, gradient, initial, c=1e-4, rho=0.9, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
         """
         class that implements the steepest descent algorithm with step sizes that are backtracked to satisfy the Armijo condition
 
@@ -115,6 +119,7 @@ class steepest_descent_backtrack:
             rho: value that the step length gets multiplied by when the Armijo condition is not satisfied in backtracking, must be (0,1)
             norm_grad_tol: value that the 2-norm of the gradient must be less than in order to consider a problem solved
             iter_lim: number of iterations that the algorithm will attempt before considering a problem unsolvable
+            print_every: the number of iterations the algorithm prints an update after
         """
         self.f = function
         self.g = gradient
@@ -123,6 +128,7 @@ class steepest_descent_backtrack:
         self.x = initial
         self.ngt = norm_grad_tol
         self.iter_lim = iter_lim
+        self.print_every = print_every
 
     def step(self, f_val=None, gradient=None):
         if gradient is None:
@@ -156,6 +162,8 @@ class steepest_descent_backtrack:
         b = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(func, grad)
+            if b%self.print_every == 0:
+                print(f"iteration:{b} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
             b+=1
@@ -167,7 +175,7 @@ class steepest_descent_backtrack:
         return np.array(xs), np.array(fs), b
 
 class BFGS:
-    def __init__(self, function, gradient, initial, c=1e-4, r=0.9, beta=1, norm_grad_tol=1e-5, iter_lim=None) -> None:
+    def __init__(self, function, gradient, initial, c=1e-4, r=0.9, beta=1, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
         """
         class that implements the Broyden Fletcher Goldfarb Shanno algorithm
 
@@ -180,6 +188,7 @@ class BFGS:
             beta: scalar by which the identity matrix gets scaled to create H0
             norm_grad_tol: value that the 2-norm of the gradient must be less than in order to consider a problem solved
             iter_lim: number of iterations that the algorithm will attempt before considering a problem unsolvable
+            print_every: the number of iterations the algorithm prints an update after
         """
         self.f = function
         self.g = gradient
@@ -189,6 +198,7 @@ class BFGS:
         self.h_mat = beta * np.identity(self.x.size)
         self.ngt = norm_grad_tol
         self.iter_lim = iter_lim
+        self.print_every = print_every
 
     def step(self, f_val=None, gradient=None):
         if gradient is None:
@@ -228,6 +238,8 @@ class BFGS:
         b = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(func, grad)
+            if b%self.print_every == 0:
+                print(f"iteration:{b} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
             b+=1
