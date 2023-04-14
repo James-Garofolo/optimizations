@@ -107,7 +107,8 @@ class newton:
     
 
 class steepest_descent_backtrack:
-    def __init__(self, function, gradient, initial, c=1e-4, rho=0.9, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
+    def __init__(self, function, gradient, initial, c=1e-4, rho=0.9, norm_grad_tol=1e-5, func_change_tol=1e-5,
+                iter_lim=None, print_every=100) -> None:
         """
         class that implements the steepest descent algorithm with step sizes that are backtracked to satisfy the Armijo condition
 
@@ -118,6 +119,7 @@ class steepest_descent_backtrack:
             c: tolerance parameter for the Armijo condition
             rho: value that the step length gets multiplied by when the Armijo condition is not satisfied in backtracking, must be (0,1)
             norm_grad_tol: value that the 2-norm of the gradient must be less than in order to consider a problem solved
+            func_change_tol: value that the change in function value for a given step needs to exceed to keep iterating
             iter_lim: number of iterations that the algorithm will attempt before considering a problem unsolvable
             print_every: the number of iterations the algorithm prints an update after
         """
@@ -127,6 +129,7 @@ class steepest_descent_backtrack:
         self.rho = rho
         self.x = initial
         self.ngt = norm_grad_tol
+        self.fct = func_change_tol
         self.iter_lim = iter_lim
         self.print_every = print_every
 
@@ -170,6 +173,10 @@ class steepest_descent_backtrack:
             if not (self.iter_lim is None):
                 if b > self.iter_lim:
                     print(np.linalg.norm(grad,1))
+                    break
+            
+            if len(fs) > 2:
+                if (fs[-1]-fs[-2]) < self.fct:
                     break
 
         return np.array(xs), np.array(fs), b
