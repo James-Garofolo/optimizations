@@ -1,5 +1,7 @@
 import numpy as np
 from sklearn import linear_model
+from torch.nn.functional import relu
+import torch
 
 #powers = np.arange(0, 1.4, 0.2)*1e-3
 #neffs_pwr = np.array([1.5, 1.5000374, 1.50007501, 1.50011288, 1.50015087, 1.50020777, 1.5002345])
@@ -40,11 +42,14 @@ if __name__ == '__main__':
     neff_wrt_pwr.fit(powers, neffs)
     print(neff_wrt_pwr.coef_, neff_wrt_pwr.intercept_)
 
-    eval_currents = np.arange(0, 4e-3, 0.01e-3)
-    eval_currents = np.array([eval_currents]).T
+    eval_currents = torch.arange(-2e-3, 4e-3, 0.01e-3)
+    #eval_currents = np.array([eval_currents]).T
 
     plt.scatter(powers, neffs, label="ground truth")
-    plt.plot(eval_currents, neff_wrt_pwr.predict(eval_currents), label="interpolation function")
+    plt.plot(eval_currents, relu(neff_wrt_pwr.coef_[0]*eval_currents)+neff_wrt_pwr.intercept_, label="interpolation function")
+    current_values = plt.gca().get_yticks()
+    # using format string '{:.0f}' here but you can choose others
+    plt.gca().set_yticklabels(['{:}'.format(x) for x in current_values])
     plt.xlabel("tuning power")
     plt.ylabel("effective index of refraction")
     plt.legend()

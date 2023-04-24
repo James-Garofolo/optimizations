@@ -175,9 +175,10 @@ class steepest_descent_backtrack:
                     print(np.linalg.norm(grad,1))
                     break
             
-            if len(fs) > 2:
-                if (fs[-1]-fs[-2]) < self.fct:
-                    break
+            if not(self.fct is None):
+                if len(fs) > 2:
+                    if (fs[-1]-fs[-2]) < self.fct:
+                        break
 
         return np.array(xs), np.array(fs), b
 
