@@ -49,7 +49,7 @@ def generate_finite_diff_grad(f, delta_x=1e-7, second_order=False):
         return ddg_1st
 
 class newton:
-    def __init__(self, function, gradient, hessian, initial, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
+    def __init__(self, function, gradient, hessian, initial, norm_grad_tol=1e-5, norm_step_tol=1e-6, iter_lim=None, print_every=100) -> None:
         """
         class that implements Newton's algorithm
 
@@ -67,6 +67,7 @@ class newton:
         self.h = hessian
         self.x = initial
         self.ngt = norm_grad_tol
+        self.nst = norm_step_tol
         self.iter_lim = iter_lim
         self.print_every = print_every
 
@@ -93,21 +94,27 @@ class newton:
         a = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(grad)
-            if a%self.print_every == 0:
+            if (a%self.print_every == 0) and (a > 0):
                 print(f"iteration:{a} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
             a+=1
             if not (self.iter_lim is None):
                 if a > self.iter_lim:
-                    print(np.linalg.norm(grad,1))
+                    print(np.linalg.norm(grad))
                     break
+
+            if len(xs) > 1:
+                if not (self.nst is None):
+                    if np.linalg.norm(xs[-1]-xs[-2]) < self.nst:
+                        print("STEP SIZE:", np.linalg.norm(xs[-1]-xs[-2]))
+                        break
 
         return np.array(xs), np.array(fs), a
     
 
 class steepest_descent_backtrack:
-    def __init__(self, function, gradient, initial, c=1e-4, rho=0.9, norm_grad_tol=1e-5, func_change_tol=1e-5,
+    def __init__(self, function, gradient, initial, c=1e-4, rho=0.9, norm_grad_tol=1e-5, norm_step_tol=1e-6, func_change_tol=1e-5,
                 iter_lim=None, print_every=100) -> None:
         """
         class that implements the steepest descent algorithm with step sizes that are backtracked to satisfy the Armijo condition
@@ -129,6 +136,7 @@ class steepest_descent_backtrack:
         self.rho = rho
         self.x = initial
         self.ngt = norm_grad_tol
+        self.nst = norm_step_tol
         self.fct = func_change_tol
         self.iter_lim = iter_lim
         self.print_every = print_every
@@ -150,6 +158,7 @@ class steepest_descent_backtrack:
             if self.f(xnew) <= (func-self.c*a*np.matmul(grad,grad)):
                 break
             else:
+                #print(self.f(xnew), (func-self.c*a*np.matmul(grad,grad)))
                 a *= self.rho
 
         self.x = xnew
@@ -165,14 +174,14 @@ class steepest_descent_backtrack:
         b = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(func, grad)
-            if b%self.print_every == 0:
+            if (b%self.print_every == 0) and (b > 0):
                 print(f"iteration:{b} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
             b+=1
             if not (self.iter_lim is None):
                 if b > self.iter_lim:
-                    print(np.linalg.norm(grad,1))
+                    print(np.linalg.norm(grad))
                     break
             
             if not(self.fct is None):
@@ -180,10 +189,17 @@ class steepest_descent_backtrack:
                     if (fs[-1]-fs[-2]) < self.fct:
                         break
 
+            if len(xs) > 1:
+                if not (self.nst is None):
+                    if np.linalg.norm(xs[-1]-xs[-2]) < self.nst:
+                        print("STEP SIZE:", np.linalg.norm(xs[-1]-xs[-2]))
+                        break
+
         return np.array(xs), np.array(fs), b
 
 class BFGS:
-    def __init__(self, function, gradient, initial, c=1e-4, r=0.9, beta=1, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
+    def __init__(self, function, gradient, initial, c=1e-4, r=0.9, beta=1, norm_grad_tol=1e-5, norm_step_tol=1e-6, iter_lim=None, 
+                print_every=100) -> None:
         """
         class that implements the Broyden Fletcher Goldfarb Shanno algorithm
 
@@ -205,6 +221,7 @@ class BFGS:
         self.x = initial
         self.h_mat = beta * np.identity(self.x.size)
         self.ngt = norm_grad_tol
+        self.nst = norm_step_tol
         self.iter_lim = iter_lim
         self.print_every = print_every
 
@@ -246,15 +263,21 @@ class BFGS:
         b = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(func, grad)
-            if b%self.print_every == 0:
+            if (b%self.print_every == 0) and (b > 0):
                 print(f"iteration:{b} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
             b+=1
             if not (self.iter_lim is None):
                 if b > self.iter_lim:
-                    print(np.linalg.norm(grad,1))
+                    print(np.linalg.norm(grad))
                     break
+
+            if len(xs) > 1:
+                if not (self.nst is None):
+                    if np.linalg.norm(xs[-1]-xs[-2]) < self.nst:
+                        print("STEP SIZE:", np.linalg.norm(xs[-1]-xs[-2]))
+                        break
 
         return np.array(xs), np.array(fs), b
     
@@ -306,7 +329,8 @@ class conjugate_gradient:
     
 
 class L_BFGS:
-    def __init__(self, function, gradient, initial, m=20, c=1e-4, r=0.9, beta=1, norm_grad_tol=1e-5, iter_lim=None, print_every=100) -> None:
+    def __init__(self, function, gradient, initial, m=20, c=1e-4, r=0.9, beta=1, norm_grad_tol=1e-5, norm_step_tol=1e-6, 
+                iter_lim=None, print_every=100, save_steps=False) -> None:
         """
         class that implements the Broyden Fletcher Goldfarb Shanno algorithm
 
@@ -332,8 +356,10 @@ class L_BFGS:
         self.m = m
         self.h_mat = beta 
         self.ngt = norm_grad_tol
+        self.nst = norm_step_tol
         self.iter_lim = iter_lim
         self.print_every = print_every
+        self.save_steps = save_steps
 
     def step(self, f_val=None, gradient=None):
         if gradient is None:
@@ -387,15 +413,26 @@ class L_BFGS:
         b = 0
         while np.linalg.norm(grad) > self.ngt:
             x, func, grad = self.step(func, grad)
-            if b%self.print_every == 0:
+            if (b%self.print_every == 0) and (b > 0):
                 print(f"iteration:{b} \ninput:{x},\n function value:{func})")
             xs.append(x)
             fs.append(func)
+            
+            if (not self.save_steps) and (len(xs) > 2):
+                xs.pop(0)
+                fs.pop(0)
+                
             b+=1
             if not (self.iter_lim is None):
                 if b > self.iter_lim:
-                    print(np.linalg.norm(grad,1))
+                    print(np.linalg.norm(grad))
                     break
+
+            if len(xs) > 1:
+                if not (self.nst is None):
+                    if np.linalg.norm(xs[-1]-xs[-2]) < self.nst:
+                        print("STEP SIZE:", np.linalg.norm(xs[-1]-xs[-2]))
+                        break
 
         return np.array(xs), np.array(fs), b
     

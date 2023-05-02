@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-from opt_algorithms import steepest_descent_backtrack
+from opt_algorithms import steepest_descent_backtrack, BFGS
 
 
 gt_x = np.arange(0, 1.1, 0.1)
-gt_y = np.array([2.7179, 2.6409, 2.4260,  2.1291, 1.8763, 1.4671, 0.9689, 0.1223, -0.7330, -1.4696, -1.7403])
+gt_y = np.array([3.0062, 2.2984, 0.9196, 0.1201, -0.1883, -1.0080, -2.4315, -2.9650, -1.2299, 1.5731, 2.9932])
 
 plot_x = np.arange(-1, 2, 0.001)
 actual_y = 1 + 2*np.cos(math.pi*plot_x) - 0.5*np.cos(2*math.pi*plot_x) + 0.2*np.cos(3*math.pi*plot_x)
@@ -30,19 +30,20 @@ def model_grad(ps):
     return grad
 
 if __name__ == "__main__":
-    Ns = [5, 7, 9, 11]
+    #print(model_j(np.zeros(5)), model_grad(np.zeros(5)))
+    
+    Ns = [5, 7]
 
     for N in Ns:
         p0 = np.zeros(N)
-        sd = steepest_descent_backtrack(model_j, model_grad, p0, norm_grad_tol=1e-6 ,func_change_tol=None)
+        sd = BFGS(model_j, model_grad, p0,  norm_grad_tol=1e-6 , norm_step_tol = None, print_every=10000)
         ps, fs, b = sd.solve()
         model_y = model_f(plot_x, ps[-1])
-        eval_mse = (np.linalg.norm(model_y-actual_y)**2)/2
         print(f"----RESULTS----\nN = {N}, \nparameters = {ps[-1]}, \nSampled MSE = {fs[-1]},\
-               \nactual MSE = {eval_mse}, \nnum iterations = {b}")
+               f(0.55): {model_f(0.55,ps[-1])},\nnum iterations = {b}")
 
-        plt.scatter(gt_x, gt_y, label="sampled data")
-        plt.plot(plot_x, actual_y, label="ground truth")
-        plt.plot(plot_x, model_y, label="model")
-        plt.legend(loc="upper right")
-        plt.show()
+        #plt.scatter(gt_x, gt_y, label="sampled data")
+        #plt.plot(plot_x, actual_y, label="ground truth")
+        #plt.plot(plot_x, model_y, label="model")
+        #plt.legend(loc="upper right")
+        #plt.show()
