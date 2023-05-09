@@ -32,7 +32,7 @@ def model_grad(ps):
 if __name__ == "__main__":
     #print(model_j(np.zeros(5)), model_grad(np.zeros(5)))
     
-    Ns = [5, 7]
+    Ns = [7, 11]
 
     for N in Ns:
         p0 = np.zeros(N)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         ps, fs, b = sd.solve()
         model_y = model_f(plot_x, ps[-1])
         print(f"----RESULTS----\nN = {N}, \nparameters = {ps[-1]}, \nSampled MSE = {fs[-1]},\
-               f(0.55): {model_f(0.55,ps[-1])},\nnum iterations = {b}")
+               \nf(0.55): {model_f(0.55,ps[-1])},\nnum iterations = {b}")
 
         #plt.scatter(gt_x, gt_y, label="sampled data")
         #plt.plot(plot_x, actual_y, label="ground truth")
